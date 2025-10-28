@@ -1,0 +1,6 @@
+[project]
+name = "projectocalidadsoftware"
+version = "0.1.0"
+description = ""
+fastapi = "^0.120.1"
+uvicorn = "^0.38.0"

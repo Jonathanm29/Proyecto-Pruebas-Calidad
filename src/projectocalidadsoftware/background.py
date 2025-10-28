@@ -1,0 +1,16 @@
+import time
+
+_last_validation_ok = True
+
+def defend_colony():
+    global _last_validation_ok
+    print("Checking for attacks")
+    _last_validation_ok = True
+
+def start_background_loop():
+    while True:
+        defend_colony()
+        time.sleep(10)
+
+def get_validation_status():
+    return _last_validation_ok
