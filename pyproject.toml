@@ -4,8 +4,7 @@ version = "0.1.0"
 description = ""
 
 [tool.poetry.dependencies]
+python = "^3.9"
 fastapi = "^0.120.1"
-uvicorn = "^0.30"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
+uvicorn = "^0.38.0"
+pytest = "^8.4.2"
