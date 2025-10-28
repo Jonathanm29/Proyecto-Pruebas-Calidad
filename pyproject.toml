@@ -9,3 +9,8 @@ fastapi = "^0.120.1"
 uvicorn = "^0.38.0"
 pytest = "^8.4.2"
 httpx = "^0.28.1"
+
+[dependency-groups]
+dev = [
+    "pytest-cov (>=7.0.0,<8.0.0)"
+]
