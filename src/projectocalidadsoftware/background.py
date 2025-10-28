@@ -4,7 +4,7 @@ _last_validation_ok = True
 
 def defend_colony():
     global _last_validation_ok
-    print("Checking for attacks")
+    print("Checking for attacks to the colony...")
     _last_validation_ok = True
 
 def start_background_loop():
