@@ -9,4 +9,4 @@ threading.Thread(target=start_background_loop, daemon=True).start()
 
 @app.get("/health/status")
 def health_status():
-    return {"status": get_health_status()}
+    return get_health_status()

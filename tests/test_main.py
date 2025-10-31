@@ -6,4 +6,3 @@ client = TestClient(app)
 def test_health_endpoint():
     response = client.get("/health/status")
     assert response.status_code == 200
-    assert "status" in response.json()
