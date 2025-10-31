@@ -2,6 +2,7 @@ import time
 
 _last_validation_ok = True
 
+# TODO: Usar este metodo para anadir la logica para defender la colonia
 def defend_colony():
     global _last_validation_ok
     print("Checking for attacks to the colony...")
