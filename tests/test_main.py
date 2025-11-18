@@ -1,5 +1,7 @@
 import pytest
-import src.projectocalidadsoftware.background as background
+import time
+import src.projectocalidadsoftware.background as bg
+import src.projectocalidadsoftware.health as health
 from fastapi.testclient import TestClient
 from src.projectocalidadsoftware.main import app
 from src.projectocalidadsoftware.background import is_ready
@@ -40,14 +42,22 @@ def test_is_ready(url, expected):
 def test_ants_needed(damage, dpa, expected):
     assert ants_needed(damage, dpa) == expected
 
-def test_no_finished_threats_does_nothing(monkeypatch):
-    now = 1000.0
-    background.active["a1"] = {"ants": [1], "end_at": now + 10, "started_at": now - 5}
+def test_tick_attacks_removes_finished_attacks(monkeypatch):
+    now = time.time()
 
-    monkeypatch.setattr("time.time", lambda: now)
+    bg.active = {
+        "t1": {"ants": [1, 2], "end_at": now - 1, "started_at": now - 5}
+    }
 
-    processed = background.tick_attacks_once(now=now)
+    monkeypatch.setattr(bg, "_push_event", lambda msg: None)
+    monkeypatch.setattr(bg, "is_ready", lambda url: False)
+    monkeypatch.setattr(bg, "requests", None)
 
-    assert processed == 0
-    assert "a1" in m.active
-    assert m.metrics["threats_resolved"] == 0
+    monkeypatch.setattr(bg.time, "sleep", lambda x: (_ for _ in ()).throw(StopIteration()))
+
+    try:
+        bg.tick_attacks()
+    except StopIteration:
+        pass
+
+    assert "t1" not in health.active
