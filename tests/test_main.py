@@ -1,4 +1,5 @@
 import pytest
+import src.projectocalidadsoftware.background as background
 from fastapi.testclient import TestClient
 from src.projectocalidadsoftware.main import app
 from src.projectocalidadsoftware.background import is_ready
@@ -38,3 +39,15 @@ def test_is_ready(url, expected):
 )
 def test_ants_needed(damage, dpa, expected):
     assert ants_needed(damage, dpa) == expected
+
+def test_no_finished_threats_does_nothing(monkeypatch):
+    now = 1000.0
+    background.active["a1"] = {"ants": [1], "end_at": now + 10, "started_at": now - 5}
+
+    monkeypatch.setattr("time.time", lambda: now)
+
+    processed = background.tick_attacks_once(now=now)
+
+    assert processed == 0
+    assert "a1" in m.active
+    assert m.metrics["threats_resolved"] == 0
