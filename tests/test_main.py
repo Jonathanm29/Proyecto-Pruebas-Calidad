@@ -9,6 +9,9 @@ from src.projectocalidadsoftware.background import ants_needed
 
 client = TestClient(app)
 
+class ExitTick(Exception):
+    pass
+
 def test_health_endpoint():
     response = client.get("/health/status")
     assert response.status_code == 200
@@ -53,11 +56,11 @@ def test_tick_attacks_removes_finished_attacks(monkeypatch):
     monkeypatch.setattr(bg, "is_ready", lambda url: False)
     monkeypatch.setattr(bg, "requests", None)
 
-    monkeypatch.setattr(bg.time, "sleep", lambda x: (_ for _ in ()).throw(StopIteration()))
+    monkeypatch.setattr(bg.time, "sleep", lambda x: (_ for _ in ()).throw(ExitTick()))
 
     try:
         bg.tick_attacks()
-    except StopIteration:
+    except ExitTick:
         pass
 
     assert "t1" not in health.active
