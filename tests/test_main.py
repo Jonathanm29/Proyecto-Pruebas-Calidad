@@ -71,9 +71,14 @@ def test_tick_attacks_survivor_calculation(monkeypatch):
     bg.active = {
         "t1": {"ants": [1,2,3], "end_at": now - 1, "started_at": now - 10}
     }
-
-    # Freeze random to always produce survivors
     monkeypatch.setattr(bg.random, "random", lambda: 0.1)
+    monkeypatch.setattr(health, "metrics", {
+        "threats_resolved": 0,
+        "survivors_total": 0,
+        "attacks_count": 0,
+        "attack_durations": [],
+        "survival_rates": [],
+    })
 
     monkeypatch.setattr(bg, "lock", bg.threading.Lock())
 
@@ -86,3 +91,32 @@ def test_tick_attacks_survivor_calculation(monkeypatch):
         pass
 
     assert health.metrics["survivors_total"] == 3
+
+def test_tick_attacks_calculates_duration_and_rate(monkeypatch):
+    now = time.time()
+
+    bg.active = {
+        "t1": {"ants": [1, 2], "end_at": now - 1, "started_at": now - 4}
+    }
+
+    monkeypatch.setattr(bg.random, "random", lambda: 0.9)  # no survivors
+
+    monkeypatch.setattr(bg, "lock", bg.threading.Lock())
+    monkeypatch.setattr(health, "metrics", {
+        "threats_resolved": 0,
+        "survivors_total": 0,
+        "attacks_count": 0,
+        "attack_durations": [],
+        "survival_rates": [],
+    })
+
+    monkeypatch.setattr(bg, "_push_event", lambda msg: None)
+    monkeypatch.setattr(bg.time, "sleep", lambda x: (_ for _ in ()).throw(ExitTick()))
+
+    try:
+        bg.tick_attacks()
+    except ExitTick:
+        pass
+
+    assert 3 <= health.metrics["attack_durations"][0] <= 4
+    assert health.metrics["survival_rates"][0] == 0.0

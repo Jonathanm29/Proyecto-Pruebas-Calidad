@@ -35,11 +35,15 @@ def tick_attacks():
 
     # We don't implement full processing yet
     for tid, data in finished:
-        health.metrics["threats_resolved"] += 1
-        health.metrics["survivors_total"] += 0
-        health.metrics["attacks_count"] += 1
-        health.metrics["attack_durations"].append(0)
-        health.metrics["survival_rates"].append(0)
+        assigned = data["ants"]
+        survivors = [a for a in assigned if random.random() < 0.5]
+        health.metrics["survivors_total"] += len(survivors)
+
+        duration = max(0.0, now - data.get("started_at", now))
+        health.metrics["attack_durations"].append(duration)
+
+        rate = len(survivors) / len(assigned) if assigned else 0.0
+        health.metrics["survival_rates"].append(rate)
 
     time.sleep(1)
 
