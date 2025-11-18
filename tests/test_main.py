@@ -64,3 +64,25 @@ def test_tick_attacks_removes_finished_attacks(monkeypatch):
         pass
 
     assert "t1" not in health.active
+
+def test_tick_attacks_survivor_calculation(monkeypatch):
+    now = time.time()
+
+    bg.active = {
+        "t1": {"ants": [1,2,3], "end_at": now - 1, "started_at": now - 10}
+    }
+
+    # Freeze random to always produce survivors
+    monkeypatch.setattr(bg.random, "random", lambda: 0.1)
+
+    monkeypatch.setattr(bg, "lock", bg.threading.Lock())
+
+    monkeypatch.setattr(bg, "_push_event", lambda msg: None)
+    monkeypatch.setattr(bg.time, "sleep", lambda x: (_ for _ in ()).throw(ExitTick()))
+
+    try:
+        bg.tick_attacks()
+    except ExitTick:
+        pass
+
+    assert health.metrics["survivors_total"] == 3
