@@ -1,4 +1,7 @@
-import src.projectocalidadsoftware.background as bg
+from src.projectocalidadsoftware.background import poll_comm_once
+from unittest.mock import Mock
+import threading
+from tests.test_utils import DummyLock
 
 def test_skips_when_not_ready():
     comm_url = "http://comm"

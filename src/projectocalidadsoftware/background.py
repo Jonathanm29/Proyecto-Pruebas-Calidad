@@ -27,6 +27,12 @@ def _push_event(msg):
 
 #def poll_env(): # GRETTEL
 #def poll_comm():  # JONATHAN
+def poll_comm_once(comm_url, pending, active, metrics,
+                   is_ready, http_get, push_event, now_fn,
+                   lock, attack_duration_sec):
+
+    if not is_ready(comm_url):
+        return
 
 def tick_attacks(): #LORENZO
     while True:
