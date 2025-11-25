@@ -33,6 +33,31 @@ def poll_comm_once(comm_url, pending, active, metrics,
 
     if not is_ready(comm_url):
         return
+    with lock:
+        items = list(pending.items())
+
+    for rid, tid in items:
+        resp = http_get(f"{comm_url}/messages/defense/requests/{rid}", timeout=10)
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data.get("status") == "accepted":
+            ant_ids = [a["id"] for a in data.get("ants", [])]
+
+            with lock:
+                metrics["ants_assigned"] = metrics.get("ants_assigned", 0) + len(ant_ids)
+
+            end_at = now_fn() + attack_duration_sec
+
+            with lock:
+                active[tid] = {
+                    "ants": ant_ids.copy(),
+                    "end_at": end_at,
+                    "started_at": now_fn()
+                }
+                pending.pop(rid, None)
+
+            push_event(f"Aceptada {rid} → threat={tid}, ants={len(ant_ids)}")
 
 def tick_attacks(): #LORENZO
     while True:

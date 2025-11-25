@@ -1,7 +1,7 @@
 from src.projectocalidadsoftware.background import poll_comm_once
 from unittest.mock import Mock
 import threading
-from tests.test_utils import DummyLock
+from tests.test_utils import DummyLock, DummyResp, make_http_get
 
 def test_skips_when_not_ready():
     comm_url = "http://comm"
