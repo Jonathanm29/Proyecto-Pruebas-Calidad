@@ -62,3 +62,49 @@ def test_accepted_updates_active_and_metrics_and_pushes_event():
     # event pushed
     push.assert_called_once()
     assert "Aceptada" in push.call_args[0][0]
+
+def test_poll_comm_process_accepted_request(monkeypatch):
+    # Fake data
+    rid = "req1"
+    tid = "threat1"
+    pending.clear()
+    active.clear()
+    metrics["ants_assigned"] = 0
+
+    pending[rid] = tid
+
+    # Fake server response
+    def mock_get(url, timeout):
+        class Resp:
+            def raise_for_status(self): pass
+            def json(self):
+                return {
+                    "status": "accepted",
+                    "ants": [{"id": "A1"}, {"id": "A2"}]
+                }
+        return Resp()
+
+    # Patch requests.get
+    monkeypatch.setattr("requests.get", mock_get)
+
+    # Patch is_ready to always be true
+    monkeypatch.setattr("module_under_test.is_ready", lambda url: True)
+
+    # Reduce sleep to 0 to avoid waiting
+    monkeypatch.setattr("time.sleep", lambda x: None)
+
+    # Capture events
+    events = []
+    monkeypatch.setattr("module_under_test._push_event", lambda msg: events.append(msg))
+
+    # Run ONE iteration only
+    monkeypatch.setattr("module_under_test.POLL_COMM_EVERY_SEC", 0)
+
+    poll_comm(iterations=1)
+
+    # Assertions
+    assert rid not in pending                   # request removed
+    assert tid in active                        # threat added
+    assert active[tid]["ants"] == ["A1", "A2"]  # ants stored
+    assert metrics["ants_assigned"] == 2        # metrics updated
+    assert "Aceptada req1" in events[0]         # event pushed
