@@ -27,6 +27,7 @@ def _push_event(msg):
 
 #def poll_env(): # GRETTEL
 #def poll_comm():  # JONATHAN
+
 def tick_attacks(): #LORENZO
     while True:
         finished = []
