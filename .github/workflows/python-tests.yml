@@ -1,0 +1,22 @@
+name: Run Python Tests
+on:
+  push:
+    branches: [ grettel/poll_env_loop, grettel/poll_env_loop_clean, master, main ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run tests
+        run: pytest -q
