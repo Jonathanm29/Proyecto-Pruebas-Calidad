@@ -3,4 +3,3 @@ requests
 fastapi
 uvicorn
 httpx
-nest_asyncio
