@@ -1,2 +1,2 @@
-- `poll_env_step()` encapsula una pasada del loop para TDD.
-- `poll_env()` ahora admite should_stop/sleep_s/step_fn sin alterar prod.
+- `poll_env_step()` encapsula una pasada del loop y permite tests unitarios sin loops infinitos.
+- `poll_env()` ahora es parametrizable en pruebas (should_stop/sleep_s/step_fn) y no cambia su comportamiento en producción.
