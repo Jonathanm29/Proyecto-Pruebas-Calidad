@@ -75,6 +75,7 @@ def poll_env(should_stop=None, sleep_s=None, step_fn=None):
         while True:
             step_fn()
             if callable(should_stop) and should_stop():
-                                return \"stopped\"
+                                                return \"stopped\"
+return \"stopped\"
 break
             time.sleep(sleep_s)
