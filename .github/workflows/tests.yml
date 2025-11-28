@@ -40,7 +40,7 @@ jobs:
           restore-keys: |
             pip-${{ runner.os }}-${{ matrix.python-version }}-
 
-      # Cache Poetry (si se usa pyproject.toml/poetry.lock)
+      # Cache Poetry (si se usa poetry.lock)
       - name: Cache Poetry
         if: hashFiles('**/poetry.lock') != ''
         uses: actions/cache@v4
@@ -53,7 +53,6 @@ jobs:
       - name: Install tooling
         run: |
           python -m pip install --upgrade pip
-          # Instala Poetry solo si existe pyproject/lock
           if [ -f pyproject.toml ] || [ -f poetry.lock ]; then
             pip install poetry
           fi
@@ -62,24 +61,12 @@ jobs:
         run: |
           set -e
           if [ -f pyproject.toml ] || [ -f poetry.lock ]; then
-            # Vía Poetry (prod + dev)
+            # Vía Poetry
             poetry install --no-interaction --no-root
-            # Fallback por si faltan librerías usadas en tests
-            poetry run python - <<'PY'
-import importlib, subprocess
-need=[]
-for pkg,mod in [
-  ("pytest","pytest"), ("pytest-cov","pytest_cov"),
-  ("requests","requests"), ("fastapi","fastapi"),
-  ("uvicorn","uvicorn"), ("httpx","httpx"),
-  ("nest_asyncio","nest_asyncio")
-]:
-    try: importlib.import_module(mod)
-    except Exception: need.append(pkg)
-if need: subprocess.check_call(["poetry","run","pip","install", *need])
-PY
+            # Asegura libs de prueba (sin heredocs)
+            poetry run pip install pytest pytest-cov requests fastapi uvicorn httpx nest_asyncio
           else
-            # Vía pip (requirements si existe, más deps de test)
+            # Vía pip
             if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
             pip install pytest pytest-cov requests fastapi uvicorn httpx nest_asyncio
           fi
