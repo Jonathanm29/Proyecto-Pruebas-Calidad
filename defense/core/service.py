@@ -22,6 +22,13 @@ def _push_event(msg: str) -> None:
 def is_ready(url: Optional[str]) -> bool:
     return bool(url) and isinstance(url, str) and url.startswith("http")
 
+def _validate_ants_args(damage: int, dpa: int) -> None:
+    if damage < 0:
+        raise ValueError("damage must be >= 0")
+    if dpa <= 0:
+        raise ValueError("dpa must be > 0")
+
+
 def ants_needed(damage: int, dpa: int = DAMAGE_PER_ANT) -> int:
     return max(1, math.ceil(damage / dpa))
 
