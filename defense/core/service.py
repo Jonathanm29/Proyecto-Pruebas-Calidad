@@ -79,3 +79,13 @@ def poll_env(should_stop=None, sleep_s: Optional[int] = None, step_fn=None):
             if callable(should_stop) and should_stop():
                 return "stopped"
             time.sleep(sleep_s)
+
+
+# --- VERDE (ants_needed con validación) ---
+
+def ants_needed(damage: int, dpa: int = DAMAGE_PER_ANT) -> int:
+    if damage < 0:
+        raise ValueError("damage must be >= 0")
+    if dpa <= 0:
+        raise ValueError("dpa must be > 0")
+    return max(1, math.ceil(damage / dpa))
