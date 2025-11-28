@@ -1,2 +1,3 @@
-- `poll_env_step()` encapsula una pasada del loop y permite tests unitarios sin loops infinitos.
-- `poll_env()` ahora es parametrizable en pruebas (should_stop/sleep_s/step_fn) y no cambia su comportamiento en producción.
+- `poll_env_step()` encapsula una pasada del loop para pruebas unitarias.
+- `poll_env()` ahora retorna "stopped" cuando es cortado por `should_stop`.
+- En producción (sin `should_stop`), se mantiene el loop infinito y el `sleep` por defecto.
