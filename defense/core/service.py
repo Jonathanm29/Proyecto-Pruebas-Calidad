@@ -1,4 +1,5 @@
 import time, math, threading, requests
+from typing import Optional
 
 # Config por defecto (puedes sobreescribir desde tu script principal)
 ENV_URL  = "http://env-placeholder"
@@ -18,7 +19,7 @@ def _push_event(msg:str):
         if len(metrics["last_events"])>20:
             metrics["last_events"] = metrics["last_events"][-20:]
 
-def is_ready(url:str|None)->bool:
+def is_ready(url: Optional[str])->bool:
     return bool(url) and isinstance(url, str) and url.startswith("http")
 
 def ants_needed(damage:int, dpa:int=DAMAGE_PER_ANT)->int:
