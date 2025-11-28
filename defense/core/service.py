@@ -89,3 +89,13 @@ def ants_needed(damage: int, dpa: int = DAMAGE_PER_ANT) -> int:
     if dpa <= 0:
         raise ValueError("dpa must be > 0")
     return max(1, math.ceil(damage / dpa))
+
+
+# --- VERDE (ants_needed con validación) ---
+
+def ants_needed(damage: int, dpa: int = DAMAGE_PER_ANT) -> int:
+    if damage < 0:
+        raise ValueError("damage must be >= 0")
+    if dpa <= 0:
+        raise ValueError("dpa must be > 0")
+    return max(1, math.ceil(damage / dpa))
