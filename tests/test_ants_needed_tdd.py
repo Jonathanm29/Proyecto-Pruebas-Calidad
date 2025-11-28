@@ -1,12 +1,11 @@
+# ROJO generado 2025-11-28 23:33:51
 import pytest
 import defense.core.service as svc
 
 def test_ants_needed_ceil_rounding():
-    # 25 de daño, 10 por hormiga => 3 hormigas
     assert svc.ants_needed(25, 10) == 3
 
 def test_ants_needed_min_one():
-    # daño pequeño => mínimo 1
     assert svc.ants_needed(1, 10) == 1
 
 def test_ants_needed_negative_damage_raises():
