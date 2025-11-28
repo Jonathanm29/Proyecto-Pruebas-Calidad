@@ -2,18 +2,24 @@ name: Run Python Tests
 
 on:
   push:
-    branches:
-      - master
-      - develop
+    branches: [ master, develop ]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
+  tests:
     runs-on: ubuntu-latest
-
     strategy:
+      fail-fast: false
       matrix:
-        python-version: [3.9]
+        python-version: ["3.9", "3.12"]
+
+    env:
+      PYTHONPATH: src:.
 
     steps:
       - name: Checkout code
@@ -23,23 +29,68 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+          cache: "pip"
 
-      - name: Install Poetry
+      # Cache pip (si se usa requirements.txt)
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            pip-${{ runner.os }}-${{ matrix.python-version }}-
+
+      # Cache Poetry (si se usa pyproject.toml/poetry.lock)
+      - name: Cache Poetry
+        if: hashFiles('**/poetry.lock') != ''
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pypoetry
+          key: poetry-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-${{ runner.os }}-${{ matrix.python-version }}-
+
+      - name: Install tooling
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          # Instala Poetry solo si existe pyproject/lock
+          if [ -f pyproject.toml ] || [ -f poetry.lock ]; then
+            pip install poetry
+          fi
 
       - name: Install dependencies
         run: |
-          poetry install --no-interaction --no-root
-
-      - name: Run tests
-        run: |
-          poetry run pytest -v
+          set -e
+          if [ -f pyproject.toml ] || [ -f poetry.lock ]; then
+            # Vía Poetry (prod + dev)
+            poetry install --no-interaction --no-root
+            # Fallback por si faltan librerías usadas en tests
+            poetry run python - <<'PY'
+import importlib, subprocess
+need=[]
+for pkg,mod in [
+  ("pytest","pytest"), ("pytest-cov","pytest_cov"),
+  ("requests","requests"), ("fastapi","fastapi"),
+  ("uvicorn","uvicorn"), ("httpx","httpx"),
+  ("nest_asyncio","nest_asyncio")
+]:
+    try: importlib.import_module(mod)
+    except Exception: need.append(pkg)
+if need: subprocess.check_call(["poetry","run","pip","install", *need])
+PY
+          else
+            # Vía pip (requirements si existe, más deps de test)
+            if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+            pip install pytest pytest-cov requests fastapi uvicorn httpx nest_asyncio
+          fi
 
       - name: Run tests with coverage
         run: |
-          poetry run pytest --cov=src.projectocalidadsoftware --cov-report=term-missing --cov-report=xml
+          if [ -f pyproject.toml ] || [ -f poetry.lock ]; then
+            poetry run pytest -v --cov=src.projectocalidadsoftware --cov-report=term-missing --cov-report=xml
+          else
+            pytest -v --cov=src.projectocalidadsoftware --cov-report=term-missing --cov-report=xml
+          fi
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
