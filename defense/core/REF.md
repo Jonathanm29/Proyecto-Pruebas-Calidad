@@ -1,0 +1,2 @@
+- `poll_env_step()` encapsula una pasada del loop para TDD.
+- `poll_env()` ahora admite should_stop/sleep_s/step_fn sin alterar prod.
