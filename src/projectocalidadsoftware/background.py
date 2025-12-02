@@ -26,52 +26,40 @@ def _push_event(msg):
     pass
 
 #def poll_env(): # GRETTEL
-def poll_comm_once( #Jonathan
-    comm_url,
-    pending,
-    active,
-    metrics,
-    is_ready,
-    http_get,
-    push,
-    now,
-    lock,
-    attack_duration_sec
+def poll_comm_once(
+        comm_url,
+        pending,
+        active,
+        metrics,
+        is_ready,
+        http_get,
+        push,
+        now,
+        lock,
+        attack_duration_sec
 ):
-    """
-    Ejecuta un solo ciclo de polling (sin loop).
-    Diseñado para pruebas unitarias.
-    """
     try:
-        # Si no está listo → no hace nada
         if not is_ready(comm_url):
             return
 
-        # Leer los items pendientes
         with lock:
             items = list(pending.items())
 
         for rid, tid in items:
-            # Llamada HTTP mockeable
             resp = http_get(f"{comm_url}/messages/defense/requests/{rid}", timeout=10)
             resp.raise_for_status()
             data = resp.json()
 
             status = data.get("status")
 
-            # -----------------------
-            #   ACEPTADO
-            # -----------------------
             if status == "accepted":
                 ant_ids = [a["id"] for a in data.get("ants", [])]
 
-                # Actualizar métricas
                 with lock:
                     metrics["ants_assigned"] = metrics.get("ants_assigned", 0) + len(ant_ids)
 
                 end_at = now() + attack_duration_sec
 
-                # Actualizar activos
                 with lock:
                     if tid in active:
                         active[tid]["ants"].extend(ant_ids)
@@ -82,15 +70,11 @@ def poll_comm_once( #Jonathan
                             "started_at": now()
                         }
 
-                    # Eliminar de pendientes
                     pending.pop(rid, None)
 
                 push(f"Aceptada {rid} → threat={tid}, ants={len(ant_ids)}")
                 continue
 
-            # -----------------------
-            #   RECHAZADO
-            # -----------------------
             if status == "rejected":
                 with lock:
                     pending.pop(rid, None)
@@ -98,8 +82,6 @@ def poll_comm_once( #Jonathan
 
     except Exception as e:
         push(f"poll_comm error: {type(e).__name__}")
-
-
 
 def tick_attacks(): #LORENZO
     while True:
