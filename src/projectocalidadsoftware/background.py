@@ -26,7 +26,7 @@ def _push_event(msg):
     pass
 
 #def poll_env(): # GRETTEL
-def poll_comm_once(
+def poll_comm_once(#Jonathan
         comm_url,
         pending,
         active,
